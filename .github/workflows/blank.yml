@@ -17,7 +17,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  setup:
+    name: Setup
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     strategy:
@@ -36,22 +37,68 @@ jobs:
           pip install --upgrade pip
           pip install requests
           git clone https://gitlab.com/enish-tool/fetch.git
-      # Runs a single command using the runners shell
+  run-1:
+      needs:
+      - setup
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: python
+        uses: actions/setup-python@v4
       - name: Run 1
         run: python fetch/main.py
+  run-2:
+      needs:
+      - setup
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: python
+        uses: actions/setup-python@v4
       - name: Run 2
         run: python fetch/main.py
-      - name: Run 3
+  run-3:
+      name: Run3
+      needs:
+      - setup
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: python
+        uses: actions/setup-python@v4
+      - name: Run
         run: python fetch/main.py
-      - name: Run 4
+  run-4:
+      name: Run4
+      needs:
+      - setup
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: python
+        uses: actions/setup-python@v4
+      - name: Run
         run: python fetch/main.py
-      - name: stage push
-        run: |
-          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          if (git diff --shortstat | grep '[0-9]'); then \
+  build:
+      name: stage push
+      needs: 
+       - run-1
+       - run-2
+       - run-3
+       - run-4
+      runs-on: ubuntu-latest
+      steps:
+        - name: push
+          run: |
+           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+           git config --global user.name "${GITHUB_ACTOR}"
+           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+           if (git diff --shortstat | grep '[0-9]'); then \
             git add .; \
-            git commit -m "GitHub Actions から差分を Push"; \
+            git commit -m "[ci skip]"; \
             git push origin HEAD:${GITHUB_REF}; \
-          fi
+           fi
