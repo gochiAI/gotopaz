@@ -23,4 +23,5 @@ jobs:
       run: |
         git clone https://gitlab.com/enish-tool/fetch.git
         cd fetch
+        pip install -U requests
         python main.py
